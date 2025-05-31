@@ -4,16 +4,46 @@ import USMap from "@/components/USMap";
 import { useState, useEffect } from "react";
 import { useSession } from "next-auth/react";
 
+function getCollectionIdFromUrl() {
+  if (typeof window === "undefined") return null;
+  const params = new URLSearchParams(window.location.search);
+  return params.get("collection_id");
+}
+
 export default function Home() {
   const { data: session } = useSession();
   const [collected, setCollected] = useState<Record<string, boolean>>({});
   const [collectionId, setCollectionId] = useState("");
   const userEmail = session?.user?.email;
 
-  // Set default collectionId to user's email on login
+  // On mount, check URL and localStorage for collectionId
   useEffect(() => {
-    if (userEmail && !collectionId) setCollectionId(userEmail);
+    const urlId = getCollectionIdFromUrl();
+    if (urlId) {
+      setCollectionId(urlId);
+      localStorage.setItem("collection_id", urlId);
+    } else {
+      const storedId = localStorage.getItem("collection_id");
+      if (storedId) {
+        setCollectionId(storedId);
+      }
+    }
+  }, []);
+
+  // If user logs in and no collectionId, use email
+  useEffect(() => {
+    if (userEmail && !collectionId) {
+      setCollectionId(userEmail);
+      localStorage.setItem("collection_id", userEmail);
+    }
   }, [userEmail, collectionId]);
+
+  // Persist collectionId changes to localStorage
+  useEffect(() => {
+    if (collectionId) {
+      localStorage.setItem("collection_id", collectionId);
+    }
+  }, [collectionId]);
 
   // Load collected states from API when user logs in or collectionId changes
   useEffect(() => {
