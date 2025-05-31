@@ -13,7 +13,7 @@ export default function Home() {
   // Set default collectionId to user's email on login
   useEffect(() => {
     if (userEmail && !collectionId) setCollectionId(userEmail);
-  }, [userEmail]);
+  }, [userEmail, collectionId]);
 
   // Load collected states from API when user logs in or collectionId changes
   useEffect(() => {

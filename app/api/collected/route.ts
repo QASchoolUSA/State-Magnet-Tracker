@@ -4,9 +4,11 @@ import { getServerSession } from "next-auth";
 import { authOptions } from "../auth/[...nextauth]/authOptions";
 
 // Helper to get collection_id from query or default to user's email
-function getCollectionId(req: NextRequest, session: any) {
+import type { Session } from "next-auth";
+function getCollectionId(req: NextRequest, session: Session) {
   const { searchParams } = new URL(req.url);
-  return searchParams.get("collection_id") || session.user?.email;
+  const email = session.user?.email ?? undefined;
+  return searchParams.get("collection_id") || email;
 }
 
 export async function GET(req: NextRequest) {
