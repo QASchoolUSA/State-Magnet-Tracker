@@ -2,8 +2,6 @@ import { NextRequest, NextResponse } from "next/server";
 import { supabase } from "@/lib/supabase";
 import { getServerSession } from "next-auth";
 import { authOptions } from "../auth/[...nextauth]/authOptions";
-
-// Helper to get collection_id from query or default to user's email
 import type { Session } from "next-auth";
 function getCollectionId(req: NextRequest, session: Session) {
   const { searchParams } = new URL(req.url);
@@ -35,11 +33,22 @@ export async function POST(req: NextRequest) {
   }
   const collection_id = getCollectionId(req, session);
   const body = await req.json();
-  const { states } = body;
+  const { states: newStates } = body;
   console.log("POST /api/collected", { collection_id, body });
+  // Fetch existing states
+  const { data: existing, error: fetchError } = await supabase
+    .from("collected_states")
+    .select("states")
+    .eq("collection_id", collection_id)
+    .single();
+  if (fetchError && fetchError.code !== "PGRST116") {
+    console.error("Supabase fetch error", fetchError);
+    return NextResponse.json({ error: fetchError.message, details: fetchError }, { status: 500 });
+  }
+  const mergedStates = { ...(existing?.states || {}), ...newStates };
   const { error } = await supabase
     .from("collected_states")
-    .upsert({ collection_id, states }, { onConflict: "collection_id" });
+    .upsert({ collection_id, states: mergedStates }, { onConflict: "collection_id" });
   if (error) {
     console.error("Supabase upsert error", error);
     return NextResponse.json({ error: error.message, details: error }, { status: 500 });
