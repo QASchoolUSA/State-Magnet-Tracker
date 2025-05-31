@@ -2,7 +2,7 @@
 
 import { ComposableMap, Geographies, Geography, Annotation } from "react-simple-maps";
 import { geoCentroid } from "d3-geo";
-import { US_STATES } from "@/lib/us-states";
+// Removed: import { US_STATES } from "@/lib/us-states";
 
 const TOPO_JSON = "/us-states-10m.json";
 
