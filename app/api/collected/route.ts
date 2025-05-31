@@ -36,11 +36,13 @@ export async function POST(req: NextRequest) {
   const collection_id = getCollectionId(req, session);
   const body = await req.json();
   const { states } = body;
+  console.log("POST /api/collected", { collection_id, body });
   const { error } = await supabase
     .from("collected_states")
     .upsert({ collection_id, states }, { onConflict: "collection_id" });
   if (error) {
-    return NextResponse.json({ error: error.message }, { status: 500 });
+    console.error("Supabase upsert error", error);
+    return NextResponse.json({ error: error.message, details: error }, { status: 500 });
   }
   return NextResponse.json({ success: true });
 }
