@@ -1,7 +1,7 @@
 "use client"
 
 import { useState } from "react";
-import { US_STATES, USState } from "@/lib/us-states";
+import { US_STATES } from "@/lib/us-states";
 import { Button } from "@/components/ui/button";
 
 interface StateListProps {
