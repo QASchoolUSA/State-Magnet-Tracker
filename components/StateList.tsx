@@ -3,6 +3,16 @@
 import { useState } from "react";
 import { US_STATES } from "@/lib/us-states";
 import { Button } from "@/components/ui/button";
+import {
+  AlertDialog,
+  AlertDialogContent,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogAction,
+  AlertDialogCancel
+} from "@/components/ui/alert-dialog";
 
 interface StateListProps {
   collected: Record<string, boolean>;
@@ -20,12 +30,20 @@ export default function StateList({ collected, setCollected }: StateListProps) {
     sortAsc ? a.name.localeCompare(b.name) : b.name.localeCompare(a.name)
   );
 
-  const toggleCollected = (abbr: string, name: string, isCollected: boolean) => {
-    const action = isCollected ? "remove" : "add";
-    if (window.confirm(`Are you sure you want to ${action} ${name}?`)) {
-      setCollected((prev) => ({ ...prev, [abbr]: !prev[abbr] }));
+  const [pendingAction, setPendingAction] = useState<{
+    abbr: string;
+    name: string;
+    isCollected: boolean;
+  } | null>(null);
+
+  const handleConfirm = () => {
+    if (pendingAction) {
+      setCollected((prev) => ({ ...prev, [pendingAction.abbr]: !pendingAction.isCollected }));
+      setPendingAction(null);
     }
   };
+
+  const handleCancel = () => setPendingAction(null);
 
   return (
     <div className="w-full max-w-2xl mx-auto">
@@ -53,7 +71,7 @@ export default function StateList({ collected, setCollected }: StateListProps) {
             </span>
             <Button
               variant={collected[state.abbreviation] ? "secondary" : "default"}
-              onClick={() => toggleCollected(state.abbreviation, state.name, !!collected[state.abbreviation])}
+              onClick={() => setPendingAction({ abbr: state.abbreviation, name: state.name, isCollected: !!collected[state.abbreviation] })}
             >
               {collected[state.abbreviation] ? "Remove Magnet" : "Add Magnet"}
             </Button>
@@ -67,6 +85,27 @@ export default function StateList({ collected, setCollected }: StateListProps) {
           </Button>
         </div>
       )}
-    </div>
+    {/* Confirmation Modal */}
+    <AlertDialog open={!!pendingAction} onOpenChange={open => { if (!open) handleCancel(); }}>
+      <AlertDialogContent>
+        <AlertDialogHeader>
+          <AlertDialogTitle>
+            {pendingAction?.isCollected ? "Remove Magnet" : "Add Magnet"}
+          </AlertDialogTitle>
+          <AlertDialogDescription>
+            {pendingAction?.isCollected
+              ? `Are you sure you want to remove ${pendingAction.name}?`
+              : `Are you sure you want to add ${pendingAction?.name}?`}
+          </AlertDialogDescription>
+        </AlertDialogHeader>
+        <AlertDialogFooter>
+          <AlertDialogCancel onClick={handleCancel}>Cancel</AlertDialogCancel>
+          <AlertDialogAction onClick={handleConfirm} autoFocus>
+            {pendingAction?.isCollected ? "Remove" : "Add"}
+          </AlertDialogAction>
+        </AlertDialogFooter>
+      </AlertDialogContent>
+    </AlertDialog>
+  </div>
   );
 }
