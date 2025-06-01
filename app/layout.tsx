@@ -28,9 +28,7 @@ export default function RootLayout({
     <html lang="en" className={`${geistSans.variable} ${geistMono.variable}`.trim()}>
       <body>
         <SessionProvider>
-          <div className="w-full flex justify-end p-4">
-            <AuthStatus />
-          </div>
+
           {children}
         </SessionProvider>
       </body>

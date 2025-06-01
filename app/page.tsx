@@ -100,8 +100,6 @@ export default function Home() {
             <ShareIcon className="w-4 h-4" /> Share
           </button>
         </div>
-      </div>
-      <div className="mb-4">
         <AuthStatus />
       </div>
       <USMap collected={collected} />
