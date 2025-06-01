@@ -12,6 +12,7 @@ interface StateListProps {
 export default function StateList({ collected, setCollected }: StateListProps) {
   const [search, setSearch] = useState("");
   const [sortAsc, setSortAsc] = useState(true);
+  const [visibleCount, setVisibleCount] = useState(10);
 
   const filteredStates = US_STATES.filter((state) =>
     state.name.toLowerCase().includes(search.toLowerCase())
@@ -19,8 +20,11 @@ export default function StateList({ collected, setCollected }: StateListProps) {
     sortAsc ? a.name.localeCompare(b.name) : b.name.localeCompare(a.name)
   );
 
-  const toggleCollected = (abbr: string) => {
-    setCollected((prev) => ({ ...prev, [abbr]: !prev[abbr] }));
+  const toggleCollected = (abbr: string, name: string, isCollected: boolean) => {
+    const action = isCollected ? "remove" : "add";
+    if (window.confirm(`Are you sure you want to ${action} ${name}?`)) {
+      setCollected((prev) => ({ ...prev, [abbr]: !prev[abbr] }));
+    }
   };
 
   return (
@@ -38,7 +42,7 @@ export default function StateList({ collected, setCollected }: StateListProps) {
         </Button>
       </div>
       <ul className="divide-y divide-border rounded shadow bg-background">
-        {filteredStates.map((state) => (
+        {filteredStates.slice(0, visibleCount).map((state) => (
           <li key={state.abbreviation} className="flex items-center justify-between px-4 py-3">
             <span className="flex items-center gap-3">
               {/* Placeholder for state outline or flag */}
@@ -49,13 +53,20 @@ export default function StateList({ collected, setCollected }: StateListProps) {
             </span>
             <Button
               variant={collected[state.abbreviation] ? "secondary" : "default"}
-              onClick={() => toggleCollected(state.abbreviation)}
+              onClick={() => toggleCollected(state.abbreviation, state.name, !!collected[state.abbreviation])}
             >
               {collected[state.abbreviation] ? "Remove Magnet" : "Add Magnet"}
             </Button>
           </li>
         ))}
       </ul>
+      {visibleCount < filteredStates.length && (
+        <div className="flex justify-center mt-4">
+          <Button variant="outline" onClick={() => setVisibleCount((c) => c + 10)}>
+            Show More
+          </Button>
+        </div>
+      )}
     </div>
   );
 }

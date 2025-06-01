@@ -3,6 +3,8 @@ import StateList from "@/components/StateList";
 import USMap from "@/components/USMap";
 import { useState, useEffect } from "react";
 import { useSession } from "next-auth/react";
+import AuthStatus from "@/components/AuthStatus";
+import { ClipboardIcon, ShareIcon } from "@heroicons/react/24/outline";
 
 function getCollectionIdFromUrl() {
   if (typeof window === "undefined") return null;
@@ -67,17 +69,40 @@ export default function Home() {
 
   return (
     <main className="flex flex-col items-center justify-center min-h-screen p-4">
-      <h1 className="text-3xl font-bold mb-6">State Magnet Tracker</h1>
+      <h1 className="text-2xl font-bold mb-4">State Magnet Tracker</h1>
       <div className="mb-4 flex flex-col items-center gap-2">
-        <label htmlFor="collectionId" className="font-medium">Collection ID (share this with family):</label>
-        <input
-          id="collectionId"
-          type="text"
-          value={collectionId}
-          onChange={(e) => setCollectionId(e.target.value)}
-          className="border rounded px-3 py-2 w-64 text-center"
-          placeholder="Enter or share a collection ID"
-        />
+        <div className="flex items-center gap-2">
+          <span className="font-medium">Share your collection:</span>
+          <button
+            className="flex items-center gap-1 px-2 py-1 border rounded bg-white hover:bg-gray-100 text-sm"
+            onClick={() => {
+              const url = `${window.location.origin}?collection_id=${collectionId}`;
+              navigator.clipboard.writeText(url);
+              alert("Collection link copied to clipboard!");
+            }}
+            title="Copy collection link"
+          >
+            <ClipboardIcon className="w-4 h-4" /> Copy Link
+          </button>
+          <button
+            className="flex items-center gap-1 px-2 py-1 border rounded bg-white hover:bg-gray-100 text-sm"
+            onClick={async () => {
+              const url = `${window.location.origin}?collection_id=${collectionId}`;
+              if (navigator.share) {
+                await navigator.share({ title: "State Magnet Tracker", url });
+              } else {
+                navigator.clipboard.writeText(url);
+                alert("Collection link copied to clipboard!");
+              }
+            }}
+            title="Share collection link"
+          >
+            <ShareIcon className="w-4 h-4" /> Share
+          </button>
+        </div>
+      </div>
+      <div className="mb-4">
+        <AuthStatus />
       </div>
       <USMap collected={collected} />
       <StateList collected={collected} setCollected={setCollected} />
